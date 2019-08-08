@@ -38,12 +38,13 @@ import time
 import urx
 import logging
 import sys
+import math
 from urx.robotiq_two_finger_gripper import Robotiq_Two_Finger_Gripper
 from signal import signal, SIGINT
 from sys import exit
 
 def handler(signal_received, frame):
-	exit(0)
+    exit(0)
 
 #function for getting character input from keyboard
 class _Getch:
@@ -82,8 +83,12 @@ class _GetchWindows:
         import msvcrt
         return msvcrt.getch()
 
-
 getch = _Getch()
+
+
+#function for calculating axis adjustment
+def calc_dist(l):
+    return (l / math.sqrt(2))
 
 
 if __name__ == "__main__":
@@ -111,24 +116,32 @@ if __name__ == "__main__":
 		pose[0] += l
        		rob.movep(pose, acc=a, vel=v, wait=False) #forward x
 	if inp == 'a':
-		pose[1] += l
-        	rob.movep(pose, acc=a, vel=v, wait=False) #diagonal down left
+		pose[1] += calc_dist(l) #change y
+		pose[2] -= calc_dist(l) #change z; combined, they will move the ee correctly
+        	rob.movep(pose, acc=a, vel=v, wait=False) #left
 	if inp == "w":
 		pose[0] -= l
 		rob.movep(pose, acc=a, vel=v, wait=False) #back x
 	if inp == 'd':
-		pose[1] -= l
-        	rob.movep(pose, acc=a, vel=v, wait=False) #diagonal up right
+		pose[1] -= calc_dist(l)
+		pose[2] += calc_dist(l)
+        	rob.movep(pose, acc=a, vel=v, wait=False) #right
 	if inp == 'i':
-		pose[2] += l
+		pose[1] -= calc_dist(l)
+		pose[2] -= calc_dist(l)
         	rob.movep(pose, acc=a, vel=v, wait=False)
-	#if inp == 'j':
-        #	rob.movep(pose, acc=a, vel=v, wait=False)
+	if inp == 'j':
+		pose[1] += calc_dist(l)
+		pose[2] -= calc_dist(l)
+        	rob.movep(pose, acc=a, vel=v, wait=False)
 	if inp == 'k':
-		pose[2] -= l
+		pose[1] += calc_dist(l)
+		pose[2] += calc_dist(l)
         	rob.movep(pose, acc=a, vel=v, wait=False)
-	#if inp == 'l':
-        #	rob.movep(pose, acc=a, vel=v, wait=False)	
+	if inp == 'l':
+		pose[1] -= calc_dist(l)
+		pose[2] += calc_dist(l)
+        	rob.movep(pose, acc=a, vel=v, wait=False)	
 
 	if inp == "h": #open gripper  (if not already open)
 		if gripstate == "close":
